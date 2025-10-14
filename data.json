@@ -3,12 +3,12 @@
     "username": "hery",
     "password": "hery1"
   },
-  "botToken": "",
+  "botToken": "7293975965:AAGLrZJWdlbwx-zzAxSwl2GHTaQggavC2WA",
   "autoActivate": true,
   "users": [
     {
-      "username": "testuser",
-      "password": "pass123",
+      "username": "test",
+      "password": "1",
       "active": true,
       "id": "user-1"
     }
