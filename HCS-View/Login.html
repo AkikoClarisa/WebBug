@@ -162,6 +162,18 @@
       z-index: 10;
     }
 
+    .error-message {
+      color: #ff0066;
+      font-size: 12px;
+      margin-top: 8px;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: rgba(255, 0, 102, 0.1);
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ff0066;
+    }
+
     @keyframes fadeInOut {
       0% {
         opacity: 0;
@@ -191,17 +203,20 @@
     <div class="title">WEB BUG XTORDCV</div>
     <div class="subtitle">Gateway Through Shadows and Fire</div>
 
-    <form method="POST" action="/auth">
+    <form method="POST" action="/auth" id="loginForm">
       <div class="form-group">
         <i class="fas fa-user"></i>
         <input type="text" name="username" placeholder="Username" required />
       </div>
       <div class="form-group">
         <i class="fas fa-key"></i>
-        <input type="text" name="key" placeholder="Password" required />
+        <input type="password" name="key" placeholder="Password" required />
       </div>
-      <button type="submit"  style="font-family: 'Nosifer', cursive; color: #cc00ff;
-      text-shadow: 0 0 8px #cc00ff;">
+      
+      <!-- Error Message -->
+      <div id="errorMessage" class="error-message" style="display: none;"></div>
+      
+      <button type="submit" style="font-family: 'Nosifer', cursive; color: #cc00ff; text-shadow: 0 0 8px #cc00ff;">
         <i class="fas fa-skull-crossbones" style="margin-right: 8px;"></i>
         — L O G I N —
         <i class="fas fa-skull-crossbones" style="margin-left: 8px;"></i>
@@ -211,16 +226,45 @@
     <a class="buy-access" href="https://t.me/rizxvelzdev" target="_blank">
       <i class="fas fa-coins"></i> Buy Key Access
     </a>
+
+    <div class="footer">
+      <div>Status: <span id="statusText" style="color: #00ff00;">● ONLINE</span></div>
+      <div>Users: <span id="userCount">0</span> active</div>
+    </div>
   </div>
 
   <div id="toast" class="toast" style="display:none;"></div>
+
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const msg = params.get("msg");
-    if (msg) {
-      const toast = document.getElementById("toast");
-      toast.textContent = msg;
-      toast.style.display = "block";
+    // Show error message from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorMsg = urlParams.get('msg');
+    if (errorMsg) {
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = decodeURIComponent(errorMsg);
+      errorDiv.style.display = 'block';
+    }
+
+    // Form submission feedback
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      const button = this.querySelector('button');
+      const originalText = button.innerHTML;
+      
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHECKING...';
+      button.disabled = true;
+      
+      setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+      }, 2000);
+    });
+
+    // Show toast for success messages
+    const successMsg = urlParams.get('success');
+    if (successMsg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = decodeURIComponent(successMsg);
+      toast.style.display = 'block';
     }
   </script>
 </body>
