@@ -1,15 +1,19 @@
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
+// Di bagian auth endpoint - tambah error handling
+app.post('/auth', async (req, res) => {
+  try {
+    const { username, key } = req.body;
+    const response = await axios.post(`${PANEL_URL}/auth`, { username, key });
+    
+    if (response.data.success) {
+      res.cookie("sessionUser", username, { maxAge: 60 * 60 * 1000, httpOnly: true });
+      res.redirect("/execution");
+    } else {
+      // Tampilkan pesan error spesifik
+      res.redirect("/login?msg=" + encodeURIComponent(response.data.message || "Login failed"));
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/server.js"
-    }
-  ]
-}
+  } catch (error) {
+    console.error("Auth error:", error.message);
+    // Tampilkan error koneksi ke panel
+    res.redirect("/login?msg=" + encodeURIComponent("Cannot connect to server. Please try again."));
+  }
+});
