@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const PANEL_URL = 'https://your-panel-domain.com'; // Ganti dengan URL panelmu
+const PANEL_URL = 'https://masvilxbuyerpanel.storedigital.web.id'; // GANTI DENGAN DOMAIN PANEL MU
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -23,37 +23,54 @@ app.get('/', (req, res) => {
   });
 });
 
-// Auth endpoint - forward ke panel
+app.get('/login', (req, res) => {
+  const filePath = path.join(__dirname, "HCS-View", "Login.html");
+  fs.readFile(filePath, "utf8", (err, html) => {
+    if (err) return res.status(500).send("❌ Gagal baca Login.html");
+    res.send(html);
+  });
+});
+
+// Auth endpoint
 app.post('/auth', async (req, res) => {
   try {
     const { username, key } = req.body;
     const response = await axios.post(`${PANEL_URL}/auth`, { username, key });
     
     if (response.data.success) {
-      res.cookie("sessionUser", username, { maxAge: 60 * 60 * 1000 });
+      res.cookie("sessionUser", username, { maxAge: 60 * 60 * 1000, httpOnly: true });
       res.redirect("/execution");
     } else {
-      res.redirect("/login?msg=" + encodeURIComponent("Username atau Key salah!"));
+      res.redirect("/login?msg=" + encodeURIComponent(response.data.message || "Login failed"));
     }
   } catch (error) {
+    console.error("Auth error:", error.message);
     res.redirect("/login?msg=" + encodeURIComponent("Error connecting to panel"));
   }
 });
 
-// Execution page - forward ke panel
+// Execution page - proxy ke panel
 app.get('/execution', async (req, res) => {
   try {
     const username = req.cookies.sessionUser;
     const { target, mode } = req.query;
-    
-    const response = await axios.get(`${PANEL_URL}/execution`, {
+
+    if (!username) {
+      return res.redirect("/login?msg=Session expired");
+    }
+
+    const response = await axios.get(`${PANEL_URL}/api/execution`, {
       params: { target, mode },
-      headers: { Cookie: `sessionUser=${username}` }
+      headers: { 
+        'Cookie': `sessionUser=${username}`,
+        'SessionUser': username 
+      }
     });
-    
+
     res.send(response.data);
   } catch (error) {
-    res.redirect("/login?msg=" + encodeURIComponent("Session expired"));
+    console.error("Execution error:", error.message);
+    res.redirect("/login?msg=" + encodeURIComponent("Error connecting to panel"));
   }
 });
 
@@ -65,4 +82,5 @@ app.get('/logout', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`✅ Web Natifly aktif di port ${PORT}`);
+  console.log(`🔗 Connected to panel: ${PANEL_URL}`);
 });
